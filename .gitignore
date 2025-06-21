@@ -1,0 +1,50 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# VSCode / PyCharm
+.vscode/
+.idea/
+
+# Flask instance & config
+instance/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+
+# Flask-Migrate
+migrations/
+
+# Environment variables
+.env
+.env.*
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# MySQL dump / temp files (jika ada)
+*.sql
+*.bak
+*.tmp
+
+# Coverage / test output
+htmlcov/
+.coverage
+.cache
+pytest_cache/
+nosetests.xml
+coverage.xml
+
+# Jupyter Notebook checkpoints (if used)
+.ipynb_checkpoints/
