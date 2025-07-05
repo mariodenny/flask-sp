@@ -37,3 +37,57 @@ def login():
             return jsonify({"error": "Password mismatch"}), 401
     else:
         return jsonify({"error": "User not found"}), 404
+
+@auth_bp.route('/user', methods=['POST'])
+def add_user():
+    try:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        data = request.get_json()
+        print(f"Data {data}")
+        username = data.get("username")
+        email = data.get("email")
+        password = data.get("password")
+        role = data.get("role") 
+        m_department_id = data.get("m_department_id")
+        nik = data.get("nik")
+
+        # Validasi wajib isi
+        if not all([username, email, password, role, m_department_id, nik]):
+            return jsonify({"error": "All fields are required!"}), 400
+
+        # Cek duplikat username
+        cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+        if cursor.fetchone():
+            return jsonify({"error": "Username already registered!"}), 400
+
+        # Cek duplikat email
+        cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+        if cursor.fetchone():
+            return jsonify({"error": "Email already registered!"}), 400
+
+        # Cek duplikat nik
+        cursor.execute("SELECT id FROM users WHERE nik = %s", (nik,))
+        if cursor.fetchone():
+            return jsonify({"error": "NIK already registered!"}), 400
+
+        hash_password = bcrypt.generate_password_hash(password)
+        # Jika semua aman -> insert user baru
+        cursor.execute("""
+            INSERT INTO users (username, email, password, role, m_department_id, nik)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (username, email, hash_password, role, m_department_id, nik))
+
+        mysql.connection.commit()
+
+        return jsonify({"success": "User added successfully!"}), 201
+
+    except Exception as e:
+        print(f"Error adding user: {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500
+
+    finally:
+        cursor.close()
+
+@auth_bp.route('/user', methods=['PUT'])
+def update_user():
+    pass
