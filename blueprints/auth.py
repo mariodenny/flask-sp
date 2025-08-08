@@ -88,6 +88,45 @@ def add_user():
     finally:
         cursor.close()
 
-@auth_bp.route('/user', methods=['PUT'])
+@auth_bp.route('/users/<int:user_id>', methods=['PUT'])
 def update_user():
     pass
+
+
+# Get all users and department
+@auth_bp.route('/user/<int:user_id>', methods=['GET'])
+def get_user_department(user_id):
+    cursor = None
+    try:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        
+        # Execute the query
+        cursor.execute("""
+            SELECT 
+                users.id as user_id,
+                users.username,
+                users.email,
+                users.m_department_id,
+                master_departments.id as department_id,
+                master_departments.name,
+                master_departments.description as department_description
+            FROM users
+            INNER JOIN master_departments ON users.m_department_id = master_departments.id  
+            WHERE users.id = %s
+        """, (user_id,))
+        
+        # Fetch the actual data
+        user_data = cursor.fetchone()
+        
+        if user_data:
+            print(user_data)  # This will now show the actual data
+            return jsonify({"user": user_data}), 200
+        else:
+            return jsonify({"error": "User not found"}), 404
+            
+    except Exception as err:
+        print(f"Something went wrong -> {err}")
+        return jsonify({"error": "Internal server error"}), 500
+    finally:
+        if cursor:
+            cursor.close()
