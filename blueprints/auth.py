@@ -88,10 +88,30 @@ def add_user():
     finally:
         cursor.close()
 
-@auth_bp.route('/users/<int:user_id>', methods=['PUT'])
-def update_user():
-    pass
+# @auth_bp.route('/users/<int:user_id>', methods=['PUT'])
+# def update_user():
+#     pass
 
+@auth_bp.route('/users', methods=['GET'])
+def get_all_users():
+    try:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("""
+            SELECT 
+                users.id,
+                users.username,
+                users.m_department_id,
+                master_departments.id AS department_id,
+                master_departments.name AS department_name
+            FROM users
+            INNER JOIN master_departments 
+                ON users.m_department_id = master_departments.id
+        """)
+        users = cursor.fetchall()
+        return jsonify({"users": users}), 200
+    except Exception as err:
+        print("Error:", err)
+        return jsonify({"error": str(err)}), 500
 
 # Get all users and department
 @auth_bp.route('/user/<int:user_id>', methods=['GET'])
@@ -129,4 +149,7 @@ def get_user_department(user_id):
         return jsonify({"error": "Internal server error"}), 500
     finally:
         if cursor:
+ 
             cursor.close()
+
+
