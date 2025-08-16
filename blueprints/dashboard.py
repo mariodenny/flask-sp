@@ -16,26 +16,25 @@ def init_app(app, _mysql):
 def get_stock():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute("""
-   SELECT 
-    users.username,
-    master_departments.`name` AS department_name,
-    master_products.`name` AS product_name,
-    transactions.transaction_date,
-    transactions.transaction_type,
-    transactions.`description`,
-    transactions.qty AS transaction_qty,
-    stocks.qty AS stock_qty,
-    CASE 
-        WHEN transactions.transaction_type = 'IN' THEN transactions.qty + stocks.qty
-        WHEN transactions.transaction_type = 'OUT' THEN stocks.qty - transactions.qty
-		  ELSE stocks.qty
-   		
-    END AS balance
-FROM transactions
-INNER JOIN master_products ON transactions.m_product_id = master_products.id
-INNER JOIN users ON transactions.created_by = users.id
-INNER JOIN master_departments ON users.m_department_id = master_departments.id
-INNER JOIN stocks ON transactions.m_product_id = stocks.m_product_id;
+SELECT 
+    u.username,
+    d.`name` AS department_name,
+    p.`name` AS product_name,
+    t.transaction_date,
+    t.transaction_type,
+    t.`description`,
+    t.qty AS transaction_qty,
+    s.qty AS stock_qty,
+    SUM(CASE 
+        WHEN t.transaction_type = 'IN' THEN t.qty
+        WHEN t.transaction_type = 'OUT' THEN -t.qty
+        ELSE 0 END
+    ) OVER (PARTITION BY t.m_product_id ORDER BY t.transaction_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS balance
+FROM transactions t
+INNER JOIN master_products p ON t.m_product_id = p.id
+INNER JOIN users u ON t.created_by = u.id
+INNER JOIN master_departments d ON u.m_department_id = d.id
+INNER JOIN stocks s ON t.m_product_id = s.m_product_id;
 
     """)
 

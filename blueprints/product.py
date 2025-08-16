@@ -61,10 +61,10 @@ def stock_in_product():
         user_id = data.get('user_id')
         m_product_id = data.get('m_product_id')
         description = data.get('description')
-        transaction_type = 'IN'  # FIXED: remove comma
-        qty = data.get('qty')    # FIXED: remove comma
-        price = data.get('price')  # FIXED
-        created_by = user_id     # FIXED
+        transaction_type = 'IN'  
+        qty = data.get('qty')    
+        price = data.get('price')
+        created_by = user_id   
         transaction_date = datetime.now(pytz.timezone('Asia/Jakarta'))
         created_at = datetime.now(pytz.timezone('Asia/Jakarta'))
         
